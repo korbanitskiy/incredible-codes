@@ -1,0 +1,34 @@
+"""
+Awesome using six times 'if' for 4 vars only
+"""
+
+
+hide_carrier_buttons = False
+can_process_return_with_carrier = False
+restriction_message = None
+can_send_label_email = False
+
+if _return.status != ReturnStatus.cancelled and _return.type != ReturnType.not_delivered:
+    if not _return.carrier:
+        restriction_message = u'Return carrier not selected'
+        hide_carrier_buttons = True
+    else:
+        return_processor_class = CarrierSelector.get_carrier(_return.carrier.name).ReturnProcess
+        if return_processor_class:
+            return_processor = return_processor_class(_return.id)
+
+            if not _return.is_processed:
+                restriction_message = return_processor.process_return_restriction_message
+                if restriction_message is None:
+                    can_process_return_with_carrier = True
+            else:
+                if _return.processed_with_carrier:
+                    restriction_message = return_processor.upload_labels_restriction_message
+                    if restriction_message is None:
+                        can_send_label_email = True
+                else:
+                    restriction_message = u'Carrier actions aren\'t allowed. Return was processed manually.'
+        else:
+            restriction_message = u'Return carrier does not support automatic processing'
+else:
+    hide_carrier_buttons = True
