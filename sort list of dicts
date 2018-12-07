@@ -1,0 +1,15 @@
+"""
+I don't know exactly what do this code but it's very exciting
+"""
+
+def group_list_of_dicts_with_sum_by_key(list_of_dicts, sum_key):
+    result = []
+    if list_of_dicts:
+        group_keys = list_of_dicts[0].keys()
+        group_keys.remove(sum_key)
+        for key, grp in groupby(sorted(list_of_dicts, key=itemgetter(*group_keys)), itemgetter(*group_keys)):
+            temp_dict = dict(zip(group_keys, key))
+            temp_dict[sum_key] = sum(item[sum_key] for item in grp)
+            result.append(temp_dict)
+    return result
+    
