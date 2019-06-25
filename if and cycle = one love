@@ -1,0 +1,33 @@
+"""
+  I know if, i love cycles - i'll use it everywhere
+"""
+
+
+regs = {
+    'out_of_stock': re.compile('\w{13}: Stock level for product - [a-zA-Z0-9_ ]+ \((\d{13})\) - is lower in VS \((\d{1,3})\) than the required sales amount \((\d{1,3})\)'),
+    'no_ref': re.compile('\w{13}: No order reference set - generating unique ID'),
+    'default_courier': re.compile('\w{13}: Using default courier'),
+    'success_order': re.compile('\w{13}: Order created successful in VS. Order ID #\d{6,7}'),
+    'payments': re.compile('\w{13}: No successful payments for this order'),
+    'transaction_totals': re.compile('\w{13}: Successful transaction totals do not match order totals: Transaction Total: [a-zA-Z0-9_ :|\[\]]+'),
+}
+
+for warning in warnings:
+    found = None
+    for key, pattern in regs.iteritems():
+        res = pattern.search(warning)
+        if res:
+            found = True
+            if key == 'out_of_stock':
+                ean_found = res.group(1)
+                stock_found = res.group(2)
+                ordered_stock_found = res.group(3)
+                if ean_found and stock_found and ordered_stock_found:
+                    for si in self.supplier_order.supplier_items:
+                        if si.item.barcode == ean_found:
+                            si.out_of_stock_qty = int(ordered_stock_found) - int(stock_found)
+                            DBSession.add(si)
+    if not found:
+        mailer = Mailer()
+        subject = u'Unknown warning'
+        mailer.send_email_to_queue_with_transaction(subject, warning, recipients_group='debug_recipients')
