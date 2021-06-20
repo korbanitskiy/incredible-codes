@@ -1,5 +1,5 @@
 """
-I don't know exactly what do this code but it's very exciting
+I'm not sure what exactly this code does but it's very exciting
 """
 
 def group_list_of_dicts_with_sum_by_key(list_of_dicts, sum_key):
